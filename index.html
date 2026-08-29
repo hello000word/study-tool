@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>山香3600刷题</title>
+<link rel="icon" href="data:,">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f5f5f7;color:#222;padding:16px;padding-bottom:80px;line-height:1.65;}
@@ -167,6 +168,33 @@ function idx2Letter(arr){
   return arr.map(i=>String.fromCharCode(65+i)).join("、")
 }
 
+// 渲染选项，带判分样式
+function renderOptions(item){
+  dom.optWrap.innerHTML = ""
+  item.options.forEach((opt,idx)=>{
+    const div = document.createElement('div')
+    div.className = "option"
+
+    if(userSelect.includes(idx)){
+      if(item.answer.includes(idx)){
+        div.classList.add("right")
+      }else{
+        div.classList.add("wrong")
+      }
+    } else if(item.answer.includes(idx) && showAnswer){
+      div.classList.add("right")
+    }
+
+    div.innerText = `${String.fromCharCode(65+idx)}. ${opt}`
+    div.dataset.idx = idx
+    // 已经作答完毕禁止点击
+    if(!showAnswer){
+      div.onclick = ()=>clickOption(idx)
+    }
+    dom.optWrap.appendChild(div)
+  })
+}
+
 // 渲染当前题目
 function renderQuestion(){
   const item = questionList[currentIndex]
@@ -177,18 +205,10 @@ function renderQuestion(){
   showAnswer = false
   dom.ansWrap.classList.add('hidden')
   dom.btnToggleAns.innerText = "查看解析"
-  //渲染选项
-  dom.optWrap.innerHTML = ""
-  item.options.forEach((opt,idx)=>{
-    const div = document.createElement('div')
-    div.className = "option"
-    div.innerText = `${String.fromCharCode(65+idx)}. ${opt}`
-    div.dataset.idx = idx
-    div.onclick = ()=>clickOption(idx)
-    dom.optWrap.appendChild(div)
-  })
+  renderOptions(item)
   refreshCollectBtn(item.id)
 }
+
 function refreshCollectBtn(qid){
   if(collectList.includes(qid)){
     dom.btnCollect.innerText = "⭐已收藏"
@@ -196,7 +216,8 @@ function refreshCollectBtn(qid){
     dom.btnCollect.innerText = "☆收藏"
   }
 }
-//点击选项
+
+//点击选项：选完自动判分弹出解析
 function clickOption(idx){
   const item = questionList[currentIndex]
   if(item.type === 'multiple'){
@@ -206,8 +227,15 @@ function clickOption(idx){
   }else{
     userSelect = [idx]
   }
+  showAnswer = true
+  dom.ansText.innerText = idx2Letter(item.answer)
+  dom.expText.innerText = item.explain
+  dom.ansWrap.classList.remove('hidden')
+  dom.btnToggleAns.innerText = "隐藏解析"
+  renderOptions(item)
 }
-//切换显示解析
+
+//切换显示解析（保留按钮备用）
 dom.btnToggleAns.onclick = ()=>{
   showAnswer = !showAnswer
   if(showAnswer){
@@ -220,7 +248,9 @@ dom.btnToggleAns.onclick = ()=>{
     dom.ansWrap.classList.add('hidden')
     dom.btnToggleAns.innerText = "查看解析"
   }
+  renderOptions(questionList[currentIndex])
 }
+
 //上一题
 dom.btnPrev.onclick = ()=>{
   if(currentIndex>0){
