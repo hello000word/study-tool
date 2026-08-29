@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh‑CN">
+<head>
+<meta charset="UTF‑8" />
+<meta name="viewport" content="width=device‑width, initial‑scale=1.0"/>
+<title>山香3600刷题</title>
+<style>
+*{box‑sizing:border‑box;margin:0;padding:0;}
+body{font‑family:system‑ui,‑apple‑system,Segoe UI,Roboto,sans‑serif;background:#f5f5f7;color:#222;padding:16px;padding‑bottom:80px;line‑height:1.65;}
+.container{max‑width:720px;margin:0 auto;}
+.header{display:flex;justify‑content:space‑between;align‑items:center;margin‑bottom:16px;}
+.tabbar{position:fixed;bottom:0;left:0;width:100%;background:#fff;display:flex;border‑top:1px solid #ddd;}
+.tabbar button{flex:1;padding:12px 0;border:none;background:transparent;font‑size:15px;cursor:pointer;color:#666;}
+.tabbar button.active{color:#409eff;font‑weight:bold;}
+.card{background:#fff;border‑radius:14px;padding:20px;margin‑bottom:16px;box‑shadow:0 1px 4px #00000012;}
+.type‑tag{display:inline‑block;background:#409eff;color:#fff;padding:2px 10px;border‑radius:6px;font‑size:13px;margin‑right:8px;}
+.q‑title{font‑size:16px;margin‑bottom:16px;}
+.option{padding:14px;border:1px solid #e5e7eb;border‑radius:10px;margin‑bottom:10px;cursor:pointer;transition:0.2s;}
+.option.selected{background:#e8f3ff;border‑color:#409eff;}
+.option.right{background:#edf9ee;border‑color:#52c41a;}
+.option.wrong{background:#fee;border‑color:#f5222d;}
+.ans‑wrap{margin‑top:18px;padding‑top:16px;border‑top:1px dashed #ccc;}
+.btn‑row{display:flex;gap:10px;margin‑top:14px;flex‑wrap:wrap;}
+button{padding:8px 14px;border‑radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;font‑size:14px;}
+button.primary{background:#409eff;color:#fff;border‑color:#409eff;}
+button.warn{background:#fff2f0;color:#f5222d;border‑color:#ffccc7;}
+.empty{text‑align:center;color:#888;margin‑top:120px;}
+.stat‑item{margin‑bottom:12px;font‑size:16px;}
+.tip{margin‑top:20px;padding:12px;background:#fffbe6;border‑radius:8px;font‑size:13px;color:#876800;}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="container">
+    <!-- 刷题页面 -->
+    <div id="page‑practice">
+        <div class="header">
+            <span id="page‑info">第1/2题</span>
+            <button id="btn‑toggle‑ans">查看解析</button>
+        </div>
+        <div class="card">
+            <div class="q‑title">
+                <span class="type‑tag" id="q‑type">单选</span>
+                <span id="q‑text"></span>
+            </div>
+            <div id="opt‑wrap"></div>
+            <div id="ans‑wrap" class="ans‑wrap hidden">
+                <div><b>✅正确答案：</b><span id="ans‑text"></span></div>
+                <div style="margin‑top:8px;"><b>解析：</b><span id="exp‑text"></span></div>
+                <div class="btn‑row">
+                    <button id="btn‑collect">☆收藏</button>
+                    <button class="warn" id="btn‑add‑error">加入错题本</button>
+                </div>
+            </div>
+        </div>
+        <div class="btn‑row">
+            <button id="btn‑prev">上一题</button>
+            <button class="primary" id="btn‑next">下一题</button>
+        </div>
+    </div>
+
+    <!-- 错题本页面 -->
+    <div id="page‑error" class="hidden">
+        <div class="header">
+            <span id="error‑info">错题：0道</span>
+            <button class="warn" id="btn‑clear‑error">清空错题</button>
+        </div>
+        <div id="error‑content"></div>
+    </div>
+
+    <!-- 统计页面 -->
+    <div id="page‑stat" class="hidden">
+        <div class="card">
+            <h3 style="margin‑bottom:16px;text‑align:center;">刷题统计</h3>
+            <div class="stat‑item">✅总题量：<span id="stat‑total">0</span> 道</div>
+            <div class="stat‑item">⭐收藏：<span id="stat‑collect">0</span> 道</div>
+            <div class="stat‑item">⚠️错题：<span id="stat‑error">0</span> 道</div>
+        </div>
+        <div class="tip">提示：所有记录保存在浏览器本地，清除浏览器缓存数据会丢失。</div>
+        <div style="margin‑top:12px;">
+            <button class="warn" id="btn‑clear‑all">清空全部本地记录</button>
+        </div>
+    </div>
+</div>
+
+<div class="tabbar">
+    <button class="active" data‑page="practice">刷题</button>
+    <button data‑page="error">错题本</button>
+    <button data‑page="stat">统计</button>
+</div>
+
+<script>
+// ===================== 【在这里编辑题库！！！】=====================
+// id必须不重复；type:single单选 multiple多选 judge判断
+const questionList = [
+  {
+    id: 1,
+    chapter: "教育学基础‑教育与教育学",
+    type: "single",
+    title: "[2025安徽]下列选项中，能够反映\"学不可以已\"思想的是()",
+    options: ["终身教育", "全民教育", "普及教育", "国际教育"],
+    answer: [0],
+    explain: "学不可以已指学习不能停止，对应终身教育思想，答案A。"
+  },
+  {
+    id:2,
+    chapter:"教育学基础‑教育与教育学",
+    type:"judge",
+    title:"动物界存在教育现象。",
+    options:["正确","错误"],
+    answer:[1],
+    explain:"教育是人类特有的社会活动，动物没有教育。答案：错误"
+  }
+]
+// =================================================================
+
+// 本地存储封装
+const storage = {
+  get(key){
+    const s = localStorage.getItem(key)
+    try{ return s ? JSON.parse(s) : [] }catch{ return [] }
+  },
+  set(key,val){ localStorage.setItem(key,JSON.stringify(val)) }
+}
+
+// 全局状态
+let currentIndex = 0
+let showAnswer = false
+let userSelect = []
+let currentPage = 'practice'
+const collectList = storage.get('collectList')
+const errorIdList = storage.get('errorIdList')
+
+// dom元素
+const dom = {
+  pagePractice:document.getElementById('page‑practice'),
+  pageError:document.getElementById('page‑error'),
+  pageStat:document.getElementById('page‑stat'),
+  pageInfo:document.getElementById('page‑info'),
+  qType:document.getElementById('q‑type'),
+  qText:document.getElementById('q‑text'),
+  optWrap:document.getElementById('opt‑wrap'),
+  ansWrap:document.getElementById('ans‑wrap'),
+  ansText:document.getElementById('ans‑text'),
+  expText:document.getElementById('exp‑text'),
+  btnToggleAns:document.getElementById('btn‑toggle‑ans'),
+  btnCollect:document.getElementById('btn‑collect'),
+  btnAddError:document.getElementById('btn‑add‑error'),
+  btnPrev:document.getElementById('btn‑prev'),
+  btnNext:document.getElementById('btn‑next'),
+  btnClearError:document.getElementById('btn‑clear‑error'),
+  errorInfo:document.getElementById('error‑info'),
+  errorContent:document.getElementById('error‑content'),
+  statTotal:document.getElementById('stat‑total'),
+  statCollect:document.getElementById('stat‑collect'),
+  statError:document.getElementById('stat‑error'),
+  btnClearAll:document.getElementById('btn‑clear‑all'),
+  tabBtns:document.querySelectorAll('.tabbar button')
+}
+
+// 工具
+function getTypeText(t){
+  const map = {single:"单项选择题",multiple:"多项选择题",judge:"判断题"}
+  return map[t]||""
+}
+function idx2Letter(arr){
+  return arr.map(i=>String.fromCharCode(65+i)).join("、")
+}
+
+// 渲染当前题目
+function renderQuestion(){
+  const item = questionList[currentIndex]
+  dom.pageInfo.innerText = `第${currentIndex+1}/${questionList.length}题`
+  dom.qType.innerText = getTypeText(item.type)
+  dom.qText.innerText = item.title
+  userSelect = []
+  showAnswer = false
+  dom.ansWrap.classList.add('hidden')
+  dom.btnToggleAns.innerText = "查看解析"
+  //渲染选项
+  dom.optWrap.innerHTML = ""
+  item.options.forEach((opt,idx)=>{
+    const div = document.createElement('div')
+    div.className = "option"
+    div.innerText = `${String.fromCharCode(65+idx)}. ${opt}`
+    div.dataset.idx = idx
+    div.onclick = ()=>clickOption(idx)
+    dom.optWrap.appendChild(div)
+  })
+  refreshCollectBtn(item.id)
+}
+function refreshCollectBtn(qid){
+  if(collectList.includes(qid)){
+    dom.btnCollect.innerText = "⭐已收藏"
+  }else{
+    dom.btnCollect.innerText = "☆收藏"
+  }
+}
+//点击选项
+function clickOption(idx){
+  const item = questionList[currentIndex]
+  if(item.type === 'multiple'){
+    const pos = userSelect.indexOf(idx)
+    if(pos>=0) userSelect.splice(pos,1)
+    else userSelect.push(idx)
+  }else{
+    userSelect = [idx]
+  }
+}
+//切换显示解析
+dom.btnToggleAns.onclick = ()=>{
+  showAnswer = !showAnswer
+  if(showAnswer){
+    const item = questionList[currentIndex]
+    dom.ansText.innerText = idx2Letter(item.answer)
+    dom.expText.innerText = item.explain
+    dom.ansWrap.classList.remove('hidden')
+    dom.btnToggleAns.innerText = "隐藏解析"
+  }else{
+    dom.ansWrap.classList.add('hidden')
+    dom.btnToggleAns.innerText = "查看解析"
+  }
+}
+//上一题
+dom.btnPrev.onclick = ()=>{
+  if(currentIndex>0){
+    currentIndex‑‑
+    renderQuestion()
+  }else alert("已经是第一题")
+}
+//下一题
+dom.btnNext.onclick = ()=>{
+  if(currentIndex < questionList.length‑1){
+    currentIndex++
+    renderQuestion()
+  }else alert("已经是最后一题")
+}
+//收藏切换
+dom.btnCollect.onclick = ()=>{
+  const qid = questionList[currentIndex].id
+  const arr = [...collectList]
+  const i = arr.indexOf(qid)
+  if(i>=0){
+    arr.splice(i,1)
+    alert("已取消收藏")
+  }else{
+    arr.push(qid)
+    alert("已收藏")
+  }
+  storage.set('collectList',arr)
+  collectList.length =0;collectList.push(...arr)
+  refreshCollectBtn(qid)
+  renderStat()
+}
+//加入错题本
+dom.btnAddError.onclick = ()=>{
+  const qid = questionList[currentIndex].id
+  const arr = [...errorIdList]
+  if(arr.includes(qid)){
+    alert("该题已在错题本")
+    return
+  }
+  arr.push(qid)
+  storage.set('errorIdList',arr)
+  errorIdList.length=0;errorIdList.push(...arr)
+  alert("已加入错题本")
+  renderStat()
+}
+
+// 切换tab页面
+dom.tabBtns.forEach(btn=>{
+  btn.onclick = ()=>{
+    dom.tabBtns.forEach(b=>b.classList.remove('active'))
+    btn.classList.add('active')
+    const page = btn.dataset.page
+    switchPage(page)
+  }
+})
+function switchPage(pageName){
+  currentPage = pageName
+  dom.pagePractice.classList.add('hidden')
+  dom.pageError.classList.add('hidden')
+  dom.pageStat.classList.add('hidden')
+  if(pageName==='practice'){
+    dom.pagePractice.classList.remove('hidden')
+    renderQuestion()
+  }else if(pageName==='error'){
+    dom.pageError.classList.remove('hidden')
+    renderErrorBook()
+  }else if(pageName==='stat'){
+    dom.pageStat.classList.remove('hidden')
+    renderStat()
+  }
+}
+
+//渲染错题本
+let errorIndex = 0
+function renderErrorBook(){
+  const errorQs = questionList.filter(q=>errorIdList.includes(q.id))
+  dom.errorInfo.innerText = `错题：${errorQs.length}道`
+  if(errorQs.length===0){
+    dom.errorContent.innerHTML = `<div class="empty">暂无错题，快去刷题吧~</div>`
+    return
+  }
+  const item = errorQs[errorIndex]
+  let html = `
+  <div class="card">
+    <div class="q‑title">
+      <span class="type‑tag">${getTypeText(item.type)}</span>
+      ${item.title}
+    </div>
+  `
+  item.options.forEach((opt,idx)=>{
+    html+=`<div class="option">${String.fromCharCode(65+idx)}. ${opt}</div>`
+  })
+  html+=`
+    <div class="ans‑wrap">
+      <div><b>✅正确答案：</b>${idx2Letter(item.answer)}</div>
+      <div style="margin‑top:8px;"><b>解析：</b>${item.explain}</div>
+      <div class="btn‑row">
+        <button class="warn" onclick="removeCurrentError(${item.id})">移出错题本</button>
+      </div>
+    </div>
+  </div>
+  <div class="btn‑row">
+    <button onclick="errorPrev()">上一题</button>
+    <button class="primary" onclick="errorNext()">下一题</button>
+  </div>
+  `
+  dom.errorContent.innerHTML = html
+}
+window.removeCurrentError = function(qid){
+  const arr = errorIdList.filter(id=>id!==qid)
+  storage.set('errorIdList',arr)
+  errorIdList.length=0;errorIdList.push(...arr)
+  errorIndex=0
+  renderErrorBook()
+  renderStat()
+}
+window.errorPrev = function(){
+  const errorQs = questionList.filter(q=>errorIdList.includes(q.id))
+  if(errorIndex>0){ errorIndex‑‑;renderErrorBook() }
+  else alert("已经是第一题")
+}
+window.errorNext = function(){
+  const errorQs = questionList.filter(q=>errorIdList.includes(q.id))
+  if(errorIndex < errorQs.length‑1){ errorIndex++;renderErrorBook() }
+  else alert("已经是最后一题")
+}
+dom.btnClearError.onclick = function(){
+  if(!confirm("确定清空全部错题？不可恢复！")) return
+  storage.set('errorIdList',[])
+  errorIdList.length=0
+  errorIndex=0
+  renderErrorBook()
+  renderStat()
+}
+
+//统计页面
+function renderStat(){
+  dom.statTotal.innerText = questionList.length
+  dom.statCollect.innerText = collectList.length
+  dom.statError.innerText = errorIdList.length
+}
+dom.btnClearAll.onclick = function(){
+  if(!confirm("确定清空收藏、错题所有本地记录？不可恢复！")) return
+  storage.set('collectList',[])
+  storage.set('errorIdList',[])
+  collectList.length=0
+  errorIdList.length=0
+  renderStat()
+}
+
+//初始化
+renderQuestion()
+renderStat()
+</script>
+</body>
+</html>
